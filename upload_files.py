@@ -2,6 +2,7 @@ from keystoneauth1 import session
 from keystoneauth1.identity import v3
 from swiftclient.client import Connection
 import os
+import sys
 
 # reference: https://docs.openstack.org/python-swiftclient/latest/client-api.html
 #
@@ -12,6 +13,14 @@ import os
 # export AUTH_SERVER=10.0.87.254; export AUTH_PROJECT_NAME=openstack; export AUTH_USERNAME=admin; export AUTH_PASSWORD=password;
 
 def main():
+    args_num = len(sys.argv)
+    if args_num == 1:
+        print("no file path is provided")
+        return
+    
+    full_file_addr = sys.argv[1]
+    print(f"file addr to upload: {full_file_addr}")
+
     auth_server = os.environ.get('AUTH_SERVER')
     if not auth_server:
         print("no auth server is in environment variables")
@@ -49,19 +58,9 @@ def main():
     conn = Connection(session=keystone_session)
 
     container = 'students-project'
-    file_name = 'file1.json'
-    file_addr = './'
-    with open(file_addr+file_name, 'rb') as f:
-        file_data = f.read()
-        conn.put_object(
-            container,
-            file_name,
-            contents=file_data,
-        )
-
-    file_name = 'file2.json'
-    file_addr = './'
-    with open(file_addr+file_name, 'rb') as f:
+    
+    file_addr, file_name = os.path.split(full_file_addr)
+    with open(full_file_addr, 'rb') as f:
         file_data = f.read()
         conn.put_object(
             container,
